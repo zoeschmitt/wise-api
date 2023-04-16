@@ -1,0 +1,41 @@
+swagger: "2.0"
+info:
+  title: wise-api
+  description: "API endpoints for Wise."
+  version: "1.0.0"
+host: wise-api-383123
+schemes:
+  - "https"
+paths:
+  "/conversations":
+    get:
+      description: "Get all conversations for user."
+      operationId: "conversations"
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          type: string
+      responses:
+        200:
+          description: Conversations list
+          schema:
+            type: array
+            properties:
+              conversations:
+                type: array
+                items:
+                  $ref: "#/definitions/Conversation"
+        400:
+          description: "The IATA code is invalid or missing."
+
+definitions:
+  Conversation:
+    type: object
+    properties:
+      id:
+        type: integer
+      text:
+        type: array
+        items:
+          type: string
