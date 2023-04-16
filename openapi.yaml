@@ -27,7 +27,7 @@ paths:
                 items:
                   $ref: "#/definitions/Conversation"
         400:
-          description: "The IATA code is invalid or missing."
+          description: "The userId is invalid or missing."
 
 definitions:
   Conversation:
