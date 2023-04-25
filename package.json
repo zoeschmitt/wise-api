@@ -1,13 +1,37 @@
 {
   "name": "wise-api",
-  "version": "0.0.1",
-  "private": true,
+  "version": "1.0.0",
   "author": "Zoe Schmitt",
+  "scripts": {
+    "build": "tsc --watch --declaration",
+    "watch": "npm-watch local",
+    "local": "functions-framework",
+    "deploy": "cd gcf && npm run deploy",
+    "test": "cd gmp && npm run test",
+    "clean": "find . -name '*.js' -type f -delete"
+  },
+  "private": true,
   "repository": {
     "type": "git",
     "url": "https://github.com/zoeschmitt/wise-api.git"
   },
-  "engines": {
-    "node": ">=12.0.0"
+  "watch": {
+    "local": "*.js"
+  },
+  "keywords": [
+    "GCP",
+    "functions",
+    "serverless"
+  ],
+  "devDependencies": {
+    "@google-cloud/functions-framework": "3.2.0",
+    "@typescript-eslint/eslint-plugin": "^5.59.1",
+    "@typescript-eslint/parser": "^5.59.1",
+    "eslint": "^8.39.0",
+    "npm-watch": "0.11.0",
+    "typescript": "^5.0.4"
+  },
+  "dependencies": {
+    "@types/express": "4.17.17"
   }
 }
