@@ -1,16 +1,19 @@
-swagger: "2.0"
+swagger: '2.0'
 info:
   title: wise-api
-  description: "API endpoints for Wise."
-  version: "1.0.0"
-host: wise-api-383123
+  description: API endpoints for Wise.
+  version: 1.0.0
 schemes:
-  - "https"
+    - https
+produces:
+  - application/json
 paths:
-  "/conversations":
+  /conversations:
     get:
-      description: "Get all conversations for user."
-      operationId: "conversations"
+      description: Get all conversations for user.
+      operationId: conversations
+      x-google-backend:
+        address: https://us-south1-wise-api.cloudfunctions.net/conversations
       parameters:
         - name: userId
           in: query
@@ -25,9 +28,9 @@ paths:
               conversations:
                 type: array
                 items:
-                  $ref: "#/definitions/Conversation"
+                  $ref: '#/definitions/Conversation'
         400:
-          description: "The userId is invalid or missing."
+          description: The userId is invalid or missing.
 
 definitions:
   Conversation:
