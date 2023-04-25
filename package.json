@@ -1,0 +1,13 @@
+{
+  "name": "wise-api",
+  "version": "0.0.1",
+  "private": true,
+  "author": "Zoe Schmitt",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zoeschmitt/wise-api.git"
+  },
+  "engines": {
+    "node": ">=12.0.0"
+  }
+}
