@@ -47,10 +47,10 @@ More detailed instructions can be found in the ["Get API Key" guide](https://dev
 
 ### Deploy
 
-You must create a `.env.yaml` with your API Key:
+You must create a `.env` with your API Key:
 
 ```env
-API_KEY=AIsdfyCnTEiLTroDN14NTtpPm1n7jrBR844ID4A
+API_KEY=
 ```
 
 You can deploy this project to Google Cloud Functions by running the following script:
