@@ -4,8 +4,8 @@
   "author": "Zoe Schmitt",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc --watch --declaration",
-    "start": "functions-framework --target=TypescriptFunction",
+    "build": "tsc",
+    "start": "functions-framework",
     "watch": "npm-watch local",
     "local": "functions-framework",
     "clean": "find . -name '*.js' -type f -delete",
