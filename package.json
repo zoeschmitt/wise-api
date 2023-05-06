@@ -2,13 +2,17 @@
   "name": "wise-api",
   "version": "1.0.0",
   "author": "Zoe Schmitt",
+  "main": "dist/index.js",
   "scripts": {
     "build": "tsc --watch --declaration",
+    "start": "functions-framework --target=TypescriptFunction",
     "watch": "npm-watch local",
     "local": "functions-framework",
     "deploy": "cd gcf && npm run deploy",
     "test": "cd gmp && npm run test",
-    "clean": "find . -name '*.js' -type f -delete"
+    "clean": "find . -name '*.js' -type f -delete",
+    "prestart": "npm run build",
+    "gcp-build": "npm run build"
   },
   "private": true,
   "repository": {
