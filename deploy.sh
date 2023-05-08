@@ -1,2 +1,5 @@
 #!/bin/bash
-gcloud functions deploy "function" --trigger-http --runtime=nodejs10 --env-vars-file .env.yaml
+FUNCTION_NAME_1=conversations
+
+echo "start to deploy cloud functions\n"
+gcloud functions deploy ${FUNCTION_NAME_1} --trigger-http --runtime=nodejs18 --source dist/${FUNCTION_NAME_1}
