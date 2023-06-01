@@ -5,10 +5,11 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
-    "start": "node run.js",
+    "help": "functions-framework --help",
+    "start": "functions-framework --source dist/functions/conversations --target=conversations",
+    "prestart": "npm run build",
     "watch": "npm-watch start",
     "clean": "find . -name '*.js' -type f -delete",
-    "prestart": "npm run build",
     "deploy": "sh deploy.sh",
     "gcp-build": "npm run build"
   },

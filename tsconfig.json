@@ -7,7 +7,7 @@
     "strict": true,
     "outDir": "dist",
     "removeComments": true,
-    "rootDir": "src/functions"
+    "rootDir": "src"
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules"]
