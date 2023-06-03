@@ -2,11 +2,9 @@
   "name": "wise-api",
   "version": "1.0.0",
   "author": "Zoe Schmitt",
-  "type": "module",
   "scripts": {
     "build": "tsc",
-    "help": "functions-framework --help",
-    "start": "functions-framework --source dist/functions/conversations --target=conversations",
+    "start": "sh run-local.sh",
     "prestart": "npm run build",
     "watch": "npm-watch start",
     "clean": "find . -name '*.js' -type f -delete",
@@ -31,6 +29,7 @@
     "@typescript-eslint/eslint-plugin": "^5.59.1",
     "@typescript-eslint/parser": "^5.59.1",
     "eslint": "^8.39.0",
+    "js-yaml": "^4.1.0",
     "npm-watch": "0.11.0",
     "typescript": "^5.0.4"
   },
