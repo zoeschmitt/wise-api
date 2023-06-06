@@ -11,11 +11,11 @@ paths:
   /conversations:
     get:
       description: Get all conversations for user.
-      operationId: conversations
+      operationId: getConversations
       x-google-backend:
         address: https://us-south1-wise-api.cloudfunctions.net/conversations
       parameters:
-        - name: userId
+        - name: user
           in: query
           required: true
           type: string
