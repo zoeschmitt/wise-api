@@ -16,4 +16,4 @@ function parse_yaml {
    }'
 }
 
-bash -c "$(parse_yaml .env.yaml) functions-framework --source dist/conversations --target=conversations"
+bash -c "$(parse_yaml .env.yaml) functions-framework --source dist/conversations/get/get-conversations.js --target=getConversations"
