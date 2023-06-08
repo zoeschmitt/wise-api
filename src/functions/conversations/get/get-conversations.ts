@@ -3,8 +3,8 @@ import { OpenAIApi } from "openai";
 import { CHATGPT_MODEL } from "../../../utils/constants";
 import { openAiAPI } from "../../../utils/utils";
 
-export const conversations = async (req: Request, res: Response) => {
-  const user = req.query.paramName;
+export const getConversations = async (req: Request, res: Response) => {
+  const user = req.query.user;
 
   if (!user || typeof user !== "string")
     return res.status(400).json({ error: "Invalid user id." });
