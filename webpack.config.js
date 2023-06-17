@@ -1,5 +1,6 @@
 const path = require("path");
 const glob = require("glob");
+const { IgnorePlugin } = require("webpack");
 
 module.exports = {
   entry: glob.sync("./src/functions/**/*.ts").reduce((entries, entry) => {
@@ -31,4 +32,9 @@ module.exports = {
   optimization: {
     minimize: false,
   },
+  plugins: [
+    new IgnorePlugin({
+      resourceRegExp: /^pg-native$|^cloudflare:sockets$/,
+    }),
+  ],
 };
