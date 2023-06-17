@@ -1,7 +1,5 @@
 import { Request, Response } from "@google-cloud/functions-framework";
-import { OpenAIApi } from "openai";
-import { CHATGPT_MODEL } from "../../../utils/constants";
-import { openAiAPI } from "../../../utils/utils";
+import { dbClient } from "../../../utils/utils";
 
 export const getConversations = async (req: Request, res: Response) => {
   const user = req.query.user;
@@ -9,14 +7,26 @@ export const getConversations = async (req: Request, res: Response) => {
   if (!user || typeof user !== "string")
     return res.status(400).json({ error: "Invalid user id." });
 
-  const openai: OpenAIApi = openAiAPI();
+  const client = dbClient();
+  await client.connect();
 
-  const completion = await openai
-    .createChatCompletion({
-      model: CHATGPT_MODEL,
-      messages: [{ role: "user", content: "Hello world" }],
-    })
-    .catch((err) => console.log(err));
+  console.log("connected");
 
-  res.send(completion?.data);
+  try {
+    // Execute the query
+    const query = "SELECT * FROM conversations WHERE userId = $1";
+    const values = [user];
+    const result = await client.query(query, values);
+
+    // Access the query result rows
+    const conversations = result.rows;
+    console.log("Conversations:", conversations);
+
+    res.send(conversations);
+  } catch (error) {
+    console.error("Error:", error);
+    throw error;
+  } finally {
+    await client.end();
+  }
 };
