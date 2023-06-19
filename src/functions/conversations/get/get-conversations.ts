@@ -1,11 +1,23 @@
 import { Request, Response } from "@google-cloud/functions-framework";
-import { dbClient } from "../../../utils/utils";
+import { dbClient } from "../../../utils/db";
+import { ObjectSchema, object, string } from "yup";
+import { validate } from "../../../utils/validate";
+import { ErrorCodes, apiError } from "../../../utils/errors";
 
-export const getConversations = async (req: Request, res: Response) => {
-  const user = req.query.user;
+interface Req {
+  query: {
+    userId: string;
+  };
+}
 
-  if (!user || typeof user !== "string")
-    return res.status(400).json({ error: "Invalid user id." });
+const schema: ObjectSchema<Req> = object({
+  query: object({
+    userId: string().required(),
+  }),
+});
+
+const handler = async (req: Request, res: Response) => {
+  const userId = req.query.userId;
 
   const client = dbClient();
   await client.connect();
@@ -13,20 +25,20 @@ export const getConversations = async (req: Request, res: Response) => {
   console.log("connected");
 
   try {
-    // Execute the query
     const query = "SELECT * FROM conversations WHERE userId = $1";
-    const values = [user];
+    const values = [userId];
     const result = await client.query(query, values);
 
-    // Access the query result rows
     const conversations = result.rows;
-    console.log("Conversations:", conversations);
+    console.log("conversations:", conversations);
 
     res.send(conversations);
   } catch (error) {
-    console.error("Error:", error);
-    throw error;
+    console.error("error:", error);
+    return apiError(res, ErrorCodes.SERVER_ERROR);
   } finally {
     await client.end();
   }
 };
+
+export const getConversations = validate(handler, schema);
