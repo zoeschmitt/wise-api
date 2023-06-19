@@ -1,6 +1,6 @@
 import { AnyObject, ObjectSchema, ValidationError } from "yup";
 import { Request, Response } from "express";
-import { ErrorCodes, error } from "./errors";
+import { ErrorCodes, apiError } from "./errors";
 
 export const validate =
   <T extends AnyObject>(
@@ -18,10 +18,10 @@ export const validate =
     } catch (err) {
       console.log(err);
       if (err instanceof ValidationError) {
-        error(res, ErrorCodes.BAD_REQUEST, err.errors);
+        apiError(res, ErrorCodes.BAD_REQUEST, { errors: err.errors });
       } else {
-        console.error("Error occurred:", error);
-        error(res, ErrorCodes.SERVER_ERROR);
+        console.error("Error occurred:", err);
+        apiError(res, ErrorCodes.SERVER_ERROR);
       }
     }
   };

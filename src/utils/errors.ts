@@ -12,5 +12,5 @@ export const ERRORS_MAPPING = {
   [ErrorCodes.SERVER_ERROR]: "Internal Server Error.",
 };
 
-export const error = (res: Response, code: ErrorCodes, err?: object) =>
+export const apiError = (res: Response, code: ErrorCodes, err?: object) =>
   res.status(code).json(err ? err : { error: ERRORS_MAPPING[code] });
