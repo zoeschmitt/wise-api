@@ -1,15 +1,26 @@
 import { Request, Response } from "@google-cloud/functions-framework";
-import { dbClient, isString } from "../../../utils/utils";
+import { dbClient } from "../../../utils/db";
+import { ObjectSchema, object, string } from "yup";
+import { ErrorCodes, apiError } from "../../../utils/errors";
+import { validate } from "../../../utils/validate";
 
-export const getConversation = async (req: Request, res: Response) => {
+interface Req {
+  query: {
+    userId: string;
+    conversationId: string;
+  };
+}
+
+const schema: ObjectSchema<Req> = object({
+  query: object({
+    userId: string().required(),
+    conversationId: string().required(),
+  }),
+});
+
+const handler = async (req: Request, res: Response) => {
   const userId = req.query.userId;
   const conversationId = req.query.conversationId;
-
-  if (!isString(userId))
-    return res.status(400).json({ error: "Invalid userId." });
-
-  if (!isString(conversationId))
-    return res.status(400).json({ error: "Invalid conversationId." });
 
   const client = dbClient();
   await client.connect();
@@ -17,25 +28,24 @@ export const getConversation = async (req: Request, res: Response) => {
   console.log("connected");
 
   try {
-    // Prepare the statement
     const statement = {
       name: "fetch-conversation",
       text: "SELECT * FROM conversations WHERE userId = $1 AND conversationId = $2",
       values: [userId, conversationId],
     };
 
-    // Execute the prepared statement
     const result = await client.query(statement);
 
-    // Access the query result rows
     const conversation = result.rows;
     console.log("conversation:", conversation);
 
     res.send(conversation);
   } catch (error) {
-    console.error("Error:", error);
-    throw error;
+    console.error("error:", error);
+    return apiError(res, ErrorCodes.SERVER_ERROR);
   } finally {
     await client.end();
   }
 };
+
+export const getConversation = validate(handler, schema);
