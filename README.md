@@ -4,27 +4,22 @@
 
 - Cloud Functions (Node 10)
   - [Function Framework](https://github.com/GoogleCloudPlatform/functions-framework-nodejs) for local development.
+- [PostgreSQL](postgresql.org)
 - TypeScript
   - Google Cloud Functions Server (Express): https://www.npmjs.com/package/@types/express
 
 ## Develop
 
-First install dependencies:
+Install dependencies:
 
 ```sh
 npm i
 ```
 
-Then in one tab continually build the project with this command:
+Run a function:
 
 ```sh
-npm run build
-```
-
-In another tab, start the web server (and watch if the source code changes):
-
-```sh
-API_KEY=<KEY> npm run watch
+npm run watch
 ```
 
 This uses [`npm-watch`](https://www.npmjs.com/package/npm-watch) with the [`functions-framework`](https://www.npmjs.com/package/@google-cloud/functions-framework) to auto re-build the server after changes.
