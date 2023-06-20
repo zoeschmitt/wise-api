@@ -5,34 +5,32 @@ import { validate } from "../../../utils/validate";
 import { ErrorCodes, apiError } from "../../../utils/errors";
 
 interface Req {
-  body: {
-    name: string;
-    email: string;
+  query: {
+    userId: string;
   };
 }
 
 const schema: ObjectSchema<Req> = object({
-  body: object({
-    name: string().required(),
-    email: string().required(),
+  query: object({
+    userId: string().required(),
   }),
 });
 
 const handler = async (req: Request, res: Response) => {
-  const body = req.body;
+  const userId = req.query.userId;
 
   const client = dbClient();
   await client.connect();
 
   try {
-    const query = "INSERT INTO users (name, email) VALUES ($1, $2) RETURNING *";
-    const values = [body.name, body.email];
+    const query = "SELECT * FROM users WHERE userId = $1";
+    const values = [userId];
     const result = await client.query(query, values);
 
-    const user = result.rows[0];
-    console.log("new user:", user);
+    const user = result.rows;
+    console.log("user:", user);
 
-    return res.send(user);
+    res.send(user);
   } catch (error) {
     console.error("error:", error);
     return apiError(res, ErrorCodes.SERVER_ERROR);
@@ -41,4 +39,4 @@ const handler = async (req: Request, res: Response) => {
   }
 };
 
-export const postUser = validate(handler, schema);
+export const getUser = validate(handler, schema);
