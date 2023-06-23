@@ -22,8 +22,6 @@ const handler = async (req: Request, res: Response) => {
   const client = dbClient();
   await client.connect();
 
-  console.log("connected");
-
   try {
     const query = "SELECT * FROM conversations WHERE userId = $1";
     const values = [userId];
