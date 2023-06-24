@@ -33,7 +33,7 @@ const schema: ObjectSchema<Req> = object({
 });
 
 const handler = async (req: Request, res: Response) => {
-  const userId = req.query.conversationId;
+  const userId = req.query.userId;
   const chatContents = req.body.contents;
   let conversationId = req.query.conversationId;
 
@@ -44,43 +44,46 @@ const handler = async (req: Request, res: Response) => {
     const chats: ChatCompletionResponseMessage[] = [];
 
     if (!conversationId) {
-      // create conversation
+      const query =
+        "INSERT INTO conversations (userId) VALUES ($1) RETURNING *";
+      const values = [userId];
+      const result = await client.query(query, values);
+      conversationId = result.rows[0].conversationId;
+      console.log(conversationId)
     } else {
       // get conversation chats and add to chats list
     }
 
-    const openai: OpenAIApi = openAiAPI();
+    // const openai: OpenAIApi = openAiAPI();
 
-    const openaiRequest: CreateChatCompletionRequest = {
-      model: CHATGPT_MODEL,
-      // messages: [{ role: "user", content: "Hello world" }],
-      messages: chats,
-    };
+    // const openaiRequest: CreateChatCompletionRequest = {
+    //   model: CHATGPT_MODEL,
+    //   // messages: [{ role: "user", content: "Hello world" }],
+    //   messages: chats,
+    // };
 
-    const completion = await openai.createChatCompletion(openaiRequest);
+    // const completion = await openai.createChatCompletion(openaiRequest);
 
-    console.log(completion?.data);
+    // console.log(completion?.data);
 
-    const chat: Partial<Chats> = {
-      conversationId: conversationId as string,
-      title: "",
-      author: userId as string,
-      contents: chatContents,
-      promptTokens: "",
-      completionTokens: "",
-      openaiId: "",
-      openaiObject: "",
-      created: ""
-    }
+    // const chat: Partial<Chats> = {
+    //   conversationId: conversationId as string,
+    //   title: "",
+    //   author: userId as string,
+    //   contents: chatContents,
+    //   promptTokens: "",
+    //   completionTokens: "",
+    //   openaiId: "",
+    //   openaiObject: "",
+    //   created: ""
+    // }
 
-    const query = "INSERT INTO chats (name, email) VALUES ($1, $2) RETURNING *";
-    const values = [body.name, body.email];
-    const result = await client.query(query, values);
+    // const query = "INSERT INTO chats (name, email) VALUES ($1, $2) RETURNING *";
+    // const values = [body.name, body.email];
+    // const result = await client.query(query, values);
 
-    const user = result.rows[0];
-    console.log("new user:", user);
-
-    return res.send(user);
+    // const user = result.rows[0];
+    // console.log("new user:", user);
   } catch (error) {
     console.error("error:", error);
     return apiError(res, ErrorCodes.SERVER_ERROR);
