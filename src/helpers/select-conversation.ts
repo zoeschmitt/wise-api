@@ -1,14 +1,18 @@
 import { Client } from "pg";
 import { PREP_KEYS } from "../utils/constants";
+import { Conversations } from "../models/conversations";
 
-export const fetchConversation = async (id: string, client: Client) => {
+export const selectConversation = async (
+  conversationId: string,
+  client: Client
+): Promise<Conversations> => {
   const statement = {
     name: PREP_KEYS.FETCH_CONVERSATION,
     text: "SELECT * FROM conversations WHERE conversationId = $1",
-    values: [id],
+    values: [conversationId],
   };
 
   const result = await client.query(statement);
 
-  return result.rows;
+  return result.rows[0];
 };
