@@ -3,7 +3,7 @@ import { dbClient } from "../../../utils/db";
 import { ObjectSchema, object, string } from "yup";
 import { ErrorCodes, apiError } from "../../../utils/errors";
 import { validate } from "../../../utils/validate";
-import { fetchConversation } from "../../../helpers/conversations";
+import { selectConversation } from "../../../helpers/select-conversation";
 
 interface Req {
   query: {
@@ -25,7 +25,7 @@ const handler = async (req: Request, res: Response) => {
   await client.connect();
 
   try {
-    const conversation = fetchConversation(conversationId as string, client);
+    const conversation = selectConversation(conversationId as string, client);
 
     res.send(conversation);
   } catch (error) {
