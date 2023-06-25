@@ -28,7 +28,6 @@ const handler = async (req: Request, res: Response) => {
     const result = await client.query(query, values);
 
     const conversations = result.rows;
-    console.log("conversations:", conversations);
 
     res.send(conversations);
   } catch (error) {
