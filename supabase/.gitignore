@@ -19,3 +19,9 @@ dist/
 
 # Secret
 .env.yaml
+
+# Supabase
+.branches
+.temp
+!.vscode
+.env.local
