@@ -7,8 +7,8 @@
     "strict": true,
     "outDir": "dist",
     "removeComments": true,
-    "rootDir": "src"
+    "rootDir": "supabase"
   },
-  "include": ["src/**/*"],
+  "include": ["supabase/**/*"],
   "exclude": ["node_modules"]
 }
