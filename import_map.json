@@ -4,7 +4,6 @@
     "std/server": "https://deno.land/std@0.177.0/http/server.ts",
     "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2.7.1",
     "postgres": "https://deno.land/x/postgres@v0.17.0/mod.ts",
-    "express": "npm:express",
-    "yup": "npm:yup"
+    "yup": "https://esm.sh/yup@1.2.0"
   }
 }
