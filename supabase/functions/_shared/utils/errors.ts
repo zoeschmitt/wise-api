@@ -1,5 +1,3 @@
-import { Response } from "express";
-
 export const enum ErrorCodes {
   BAD_REQUEST = 400,
   NOT_FOUND = 404,
@@ -12,5 +10,7 @@ export const ERRORS_MAPPING = {
   [ErrorCodes.SERVER_ERROR]: "Internal Server Error.",
 };
 
-export const apiError = (res: Response, code: ErrorCodes, err?: object) =>
-  res.status(code).json(err ? err : { error: ERRORS_MAPPING[code] });
+export const apiError = (code: ErrorCodes, err?: Record<string, unknown>) =>
+  new Response(String(err ? err : { error: ERRORS_MAPPING[code] }), {
+    status: code,
+  });

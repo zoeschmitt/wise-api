@@ -1,4 +1,3 @@
-import { Request, Response } from "express";
 import { ObjectSchema, object, string } from "yup";
 import { serve } from "std/server";
 import { Pool } from "postgres";
