@@ -4,7 +4,7 @@
   "author": "Zoe Schmitt",
   "scripts": {
     "deploy": "supabase functions deploy && supabase secrets set --env-file ./supabase/.env.local",
-    "local": "supabase start && supabase functions serve --env-file ./supabase/.env.local"
+    "local": "supabase start && supabase functions serve --env-file ./supabase/.env.local --import-map ./import_map.json"
   },
   "watch": {
     "local": {
