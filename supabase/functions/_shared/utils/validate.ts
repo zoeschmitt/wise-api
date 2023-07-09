@@ -1,27 +1,20 @@
 import { AnyObject, ObjectSchema, ValidationError } from "yup";
-import { Request, Response } from "express";
-import { ErrorCodes, apiError } from "./errors";
+import { ErrorCodes, apiError } from "./errors.ts";
 
 export const validate =
   <T extends AnyObject>(
-    handler: (req: Request, res: Response) => void,
+    handler: (req: Request) => Promise<Response>,
     schema: ObjectSchema<T>
   ) =>
-  async (req: Request, res: Response) => {
+  async (req: Request) => {
     try {
-      await schema.validate({
-        body: req.body,
-        query: req.query,
-        params: req.params,
-      });
-      return handler(req, res);
+      const body = await req.json();
+      await schema.validate(body);
+      return handler(req);
     } catch (err) {
       console.log(err);
-      if (err instanceof ValidationError) {
-        apiError(res, ErrorCodes.BAD_REQUEST, { errors: err.errors });
-      } else {
-        console.error("Error occurred:", err);
-        apiError(res, ErrorCodes.SERVER_ERROR);
-      }
+      return err instanceof ValidationError
+        ? apiError(ErrorCodes.BAD_REQUEST, { errors: err.errors })
+        : apiError(ErrorCodes.SERVER_ERROR);
     }
   };

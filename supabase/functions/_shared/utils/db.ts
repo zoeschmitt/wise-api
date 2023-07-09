@@ -1,14 +1,20 @@
-import { Client } from "pg";
+import { Pool } from "postgres";
 
-export const dbClient = (): Client => {
-  const { DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD } = process.env;
-  return new Client({
-    host: DB_HOST,
-    port: Number(DB_PORT),
-    database: DB_NAME,
-    user: DB_USER,
-    password: DB_PASSWORD,
-  });
+export const pool = () => {
+  // Create a database pool with one connection.
+  const { DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD } =
+    Deno.env.toObject();
+  return new Pool(
+    {
+      tls: { enabled: false },
+      database: DB_NAME,
+      hostname: DB_HOST,
+      user: DB_USER,
+      port: DB_PORT,
+      password: DB_PASSWORD,
+    },
+    1
+  );
 };
 
 export const getInsertProperties = <T>(obj: T): string[] => {
