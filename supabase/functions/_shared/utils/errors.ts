@@ -11,6 +11,6 @@ export const ERRORS_MAPPING = {
 };
 
 export const apiError = (code: ErrorCodes, err?: Record<string, unknown>) =>
-  new Response(String(err ? err : { error: ERRORS_MAPPING[code] }), {
+  new Response(JSON.stringify(err ? err : { error: ERRORS_MAPPING[code] }), {
     status: code,
   });
