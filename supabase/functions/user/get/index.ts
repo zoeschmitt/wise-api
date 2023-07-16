@@ -1,3 +1,4 @@
+import { CompleteRequest } from "../../_shared/models/requests.ts";
 import { pool } from "../../_shared/utils/db.ts";
 import { ErrorCodes, apiError } from "../../_shared/utils/errors.ts";
 import { getRequestParams, validate } from "../../_shared/utils/validate.ts";
@@ -15,8 +16,8 @@ const schema: ObjectSchema<Req> = object({
   }).required(),
 });
 
-const handler = async (req: Request): Promise<Response> => {
-  const { userId } = getRequestParams(req)
+const handler = async (req: CompleteRequest): Promise<Response> => {
+  const { userId } = req.params;
 
   const db = await pool().connect();
 
@@ -24,8 +25,7 @@ const handler = async (req: Request): Promise<Response> => {
     const result =
       await db.queryObject`SELECT * FROM users WHERE userId = ${userId}`;
 
-    const user = result.rows;
-    console.log("user:", user);
+    const user = result.rows[0];
 
     return new Response(JSON.stringify(user), {
       headers: { "Content-Type": "application/json" },
