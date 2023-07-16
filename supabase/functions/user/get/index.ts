@@ -1,20 +1,22 @@
 import { pool } from "../../_shared/utils/db.ts";
 import { ErrorCodes, apiError } from "../../_shared/utils/errors.ts";
-import { validate } from "../../_shared/utils/validate.ts";
+import { getRequestParams, validate } from "../../_shared/utils/validate.ts";
 import { ObjectSchema, object, string } from "yup";
 
 interface Req {
-  userId: string;
+  params: {
+    userId: string;
+  };
 }
 
 const schema: ObjectSchema<Req> = object({
-  userId: string().required(),
+  params: object({
+    userId: string().required(),
+  }).required(),
 });
 
 const handler = async (req: Request): Promise<Response> => {
-  const { userId } = await req.json();
-
-  console.log(req.json());
+  const { userId } = getRequestParams(req)
 
   const db = await pool().connect();
 
