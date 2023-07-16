@@ -5,3 +5,12 @@ export enum RequestMethod {
   DELETE = "DELETE",
   OPTIONS = "OPTIONS",
 }
+export class CompleteRequest {
+  params?: any;
+  body?: any;
+
+  constructor(params?: any, body?: any) {
+    this.params = params ?? {};
+    this.body = body ?? {};
+  }
+}
