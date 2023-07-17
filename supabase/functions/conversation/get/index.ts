@@ -6,28 +6,28 @@ import { ObjectSchema, object, string } from "yup";
 
 interface Req {
   params: {
-    userId: string;
+    conversationId: string;
   };
 }
 
 const schema: ObjectSchema<Req> = object({
   params: object({
-    userId: string().required(),
+    conversationId: string().required(),
   }).required(),
 });
 
 const handler = async (req: CompleteRequest): Promise<Response> => {
-  const { userId } = req.params;
+  const { conversationId } = req.params;
 
   const db = await pool().connect();
 
   try {
     const result =
-      await db.queryObject`SELECT * FROM users WHERE userId = ${userId}`;
+      await db.queryObject`SELECT * FROM conversations WHERE conversationId = ${conversationId}`;
 
-    const user = result.rows[0];
+    const conversations = result.rows[0];
 
-    return new Response(JSON.stringify(user), {
+    return new Response(JSON.stringify(conversations), {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
@@ -38,4 +38,4 @@ const handler = async (req: CompleteRequest): Promise<Response> => {
   }
 };
 
-export const getUser = validate(handler, schema);
+export const getConversation = validate(handler, schema);
