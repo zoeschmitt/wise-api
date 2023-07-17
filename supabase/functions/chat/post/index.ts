@@ -3,10 +3,9 @@ import { pool } from "../../_shared/utils/db.ts";
 import { ErrorCodes, apiError } from "../../_shared/utils/errors.ts";
 import { validate } from "../../_shared/utils/validate.ts";
 import { ObjectSchema, object, string } from "yup";
-import { OpenAIApi } from "openai";
+import { CreateChatCompletionRequest } from "openai";
 import { Chat, ChatRole } from "../../_shared/models/chats.ts";
 import { Conversation } from "../../_shared/models/conversations.ts";
-import { openAiAPI } from "../../_shared/utils/openai.ts";
 import { CHATGPT_MODEL } from "../../_shared/utils/constants.ts";
 import { insertChat } from "../../_shared/helpers/insert-chat.ts";
 
@@ -44,10 +43,9 @@ const handler = async (req: CompleteRequest): Promise<Response> => {
     if (!conversationId) {
       console.log(`no conversation id, creating...`);
 
-      const result =
-        await db.queryObject<Conversation>`INSERT INTO conversations (userId) VALUES (${userId}) RETURNING *`;
+      const result = await db.queryObject<Conversation>`INSERT INTO conversations (userId) VALUES (${userId}) RETURNING *`;
 
-      conversationId = result.rows[0].conversationId;
+      conversationId = (result.rows[0] as any).conversationid;
 
       console.log(`created conversation with id: ${conversationId}`);
     } else {
@@ -72,29 +70,49 @@ const handler = async (req: CompleteRequest): Promise<Response> => {
 
     console.log(`sending ${openAiChats.length} chats to OpenAI...`);
 
-    const openai: OpenAIApi = openAiAPI();
+    const openaiRequest: CreateChatCompletionRequest = {
+      model: CHATGPT_MODEL,
+      messages: openAiChats,
+      temperature: 0,
+    };
 
-    const openaiRequest = { model: CHATGPT_MODEL, messages: openAiChats };
+    console.log("openaiRequest", openaiRequest);
 
-    const completion = await openai.createChatCompletion(openaiRequest);
+    const openAiResponse = await fetch(
+      "https://api.openai.com/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${Deno.env.get("OPENAI")}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(openaiRequest),
+      }
+    );
 
-    console.log(`OpenAI response ${completion.status}`);
+    const completion = await openAiResponse.json();
+
+    console.log(completion);
+
+    console.log(`OpenAI response ${openAiResponse.status}`);
 
     const chatResponse = new Chat({
       conversationId,
       userId,
       role: ChatRole.Assistant,
-      content: completion?.data?.choices?.[0].message?.content,
-      promptTokens: completion?.data?.usage?.prompt_tokens,
-      completionTokens: completion?.data?.usage?.completion_tokens,
-      openAiModel: completion?.data?.model,
-      openAiId: completion?.data?.id,
-      openAiObject: completion?.data?.object,
+      content: completion?.choices?.[0].message?.content,
+      promptTokens: completion?.usage?.prompt_tokens,
+      completionTokens: completion?.usage?.completion_tokens,
+      openAiModel: completion?.model,
+      openAiId: completion?.id,
+      openAiObject: completion?.object,
     });
 
     chats.push(chatResponse);
 
     console.log(`inserting chats into db...`);
+
+    console.log(chats);
 
     for (const chat of chats) {
       await insertChat(chat, db);

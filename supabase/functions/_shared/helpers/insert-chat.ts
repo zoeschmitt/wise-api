@@ -1,17 +1,19 @@
 import { PoolClient } from "postgres";
 import { Chat } from "../models/chats.ts";
+import { getInsertProperties, getInsertValues } from "../utils/db.ts";
 
 export const insertChat = async (
   chat: Chat,
   client: PoolClient
-): Promise<Chat[]> => {
-  const keys = Object.keys(chat);
-  const values = Object.values(chat);
+): Promise<void> => {
+  const insertProps = getInsertProperties(chat);
+  const insertVals = getInsertValues(insertProps);
 
-  const result = await client.queryObject<Chat>`
-  INSERT INTO chats (${keys.join(", ")})
-  VALUES (${values.join(", ")})
-  RETURNING *`;
+  const query = `
+  INSERT INTO chats (${insertProps.join(", ")})
+  VALUES (${insertVals.join(", ")})`;
 
-  return result.rows;
+  const values = insertProps.map((p) => chat[p as keyof Chat]);
+
+  await client.queryArray<any[]>(query, values);
 };
