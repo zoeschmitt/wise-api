@@ -1,4 +1,4 @@
-export type Conversations = {
+export type Conversation = {
   conversationId: string;
   userId: string;
   created: string;

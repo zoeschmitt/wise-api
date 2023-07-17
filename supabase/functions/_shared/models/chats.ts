@@ -1,10 +1,13 @@
-import { ChatCompletionResponseMessageRoleEnum } from "openai";
-
-export class Chats {
+export enum ChatRole {
+  System = "system",
+  User = "user",
+  Assistant = "assistant",
+}
+export class Chat {
   chatId?: string;
   conversationId: string;
   created: string;
-  role: ChatCompletionResponseMessageRoleEnum;
+  role: ChatRole;
   userId: string;
   content: string;
   promptTokens?: number;
@@ -25,11 +28,11 @@ export class Chats {
     openAiModel,
     openAiId,
     openAiObject,
-  }: Partial<Chats>) {
+  }: Partial<Chat>) {
     this.chatId = chatId;
     this.conversationId = conversationId || "";
     this.created = created || "";
-    this.role = role || ChatCompletionResponseMessageRoleEnum.User;
+    this.role = role || ChatRole.User;
     this.userId = userId || "";
     this.content = content || "";
     this.promptTokens = promptTokens;

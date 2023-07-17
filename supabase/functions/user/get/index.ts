@@ -1,4 +1,5 @@
 import { CompleteRequest } from "../../_shared/models/requests.ts";
+import { User } from "../../_shared/models/users.ts";
 import { pool } from "../../_shared/utils/db.ts";
 import { ErrorCodes, apiError } from "../../_shared/utils/errors.ts";
 import { validate } from "../../_shared/utils/validate.ts";
@@ -23,7 +24,7 @@ const handler = async (req: CompleteRequest): Promise<Response> => {
 
   try {
     const result =
-      await db.queryObject`SELECT * FROM users WHERE userId = ${userId}`;
+      await db.queryObject<User>`SELECT * FROM users WHERE userId = ${userId}`;
 
     const user = result.rows[0];
 

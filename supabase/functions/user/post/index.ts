@@ -1,4 +1,5 @@
 import { CompleteRequest } from "../../_shared/models/requests.ts";
+import { User } from "../../_shared/models/users.ts";
 import { pool } from "../../_shared/utils/db.ts";
 import { ErrorCodes, apiError } from "../../_shared/utils/errors.ts";
 import { validate } from "../../_shared/utils/validate.ts";
@@ -25,7 +26,7 @@ const handler = async (req: CompleteRequest): Promise<Response> => {
 
   try {
     const result =
-      await db.queryObject`INSERT INTO users (name, email) VALUES (${name}, ${email}) RETURNING *`;
+      await db.queryObject<User>`INSERT INTO users (name, email) VALUES (${name}, ${email}) RETURNING *`;
 
     const user = result.rows[0];
 

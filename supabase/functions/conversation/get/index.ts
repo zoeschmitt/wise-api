@@ -1,3 +1,4 @@
+import { Conversation } from "../../_shared/models/conversations.ts";
 import { CompleteRequest } from "../../_shared/models/requests.ts";
 import { pool } from "../../_shared/utils/db.ts";
 import { ErrorCodes, apiError } from "../../_shared/utils/errors.ts";
@@ -23,7 +24,7 @@ const handler = async (req: CompleteRequest): Promise<Response> => {
 
   try {
     const result =
-      await db.queryObject`SELECT * FROM conversations WHERE conversationId = ${conversationId}`;
+      await db.queryObject<Conversation>`SELECT * FROM conversations WHERE conversationId = ${conversationId}`;
 
     const conversations = result.rows[0];
 
