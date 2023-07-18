@@ -76,7 +76,7 @@ const handler = async (req: CompleteRequest): Promise<Response> => {
       temperature: 0,
     };
 
-    console.log("openaiRequest", openaiRequest);
+    console.log("Chat Request", openaiRequest);
 
     const openAiResponse = await fetch(
       "https://api.openai.com/v1/chat/completions",
@@ -92,9 +92,7 @@ const handler = async (req: CompleteRequest): Promise<Response> => {
 
     const completion = await openAiResponse.json();
 
-    console.log(completion);
-
-    console.log(`OpenAI response ${openAiResponse.status}`);
+    console.log(`OpenAI response ${openAiResponse.status}`, completion);
 
     const chatResponse = new Chat({
       conversationId,
@@ -110,9 +108,7 @@ const handler = async (req: CompleteRequest): Promise<Response> => {
 
     chats.push(chatResponse);
 
-    console.log(`inserting chats into db...`);
-
-    console.log(chats);
+    console.log(`inserting chats into db...`, chats);
 
     for (const chat of chats) {
       await insertChat(chat, db);

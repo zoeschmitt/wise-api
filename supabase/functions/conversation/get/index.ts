@@ -24,7 +24,37 @@ const handler = async (req: CompleteRequest): Promise<Response> => {
 
   try {
     const result =
-      await db.queryObject<Conversation>`SELECT * FROM conversations WHERE conversationId = ${conversationId}`;
+      await db.queryObject<Conversation>`SELECT
+      c.conversationid,
+      c.userid,
+      c.title,
+      c.created,
+      c.updated,
+      json_agg(json_build_object(
+        'conversationId', ch.conversationid,
+        'created', ch.created,
+        'role', ch.role,
+        'userId', ch.userid,
+        'content', ch.content,
+        'promptTokens', ch.prompttokens,
+        'completionTokens', ch.completiontokens,
+        'openAiModel', ch.openaimodel,
+        'openAiId', ch.openaiid,
+        'openAiObject', ch.openaiobject
+      )) AS chats
+    FROM
+      public.conversations AS c
+    JOIN
+      public.chats AS ch
+      ON c.conversationid = ch.conversationid
+    WHERE
+      c.conversationid = ${conversationId}
+    GROUP BY
+      c.conversationid,
+      c.userid,
+      c.title,
+      c.created,
+      c.updated;`;
 
     const conversations = result.rows[0];
 
