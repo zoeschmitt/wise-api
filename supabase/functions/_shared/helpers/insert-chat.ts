@@ -1,22 +1,19 @@
-import { Client } from "pg";
-import { Chats } from "../models/chats";
-import { getInsertProperties, getInsertValues } from "../utils/db";
+import { PoolClient } from "postgres";
+import { Chat } from "../models/chats.ts";
+import { getInsertProperties, getInsertValues } from "../utils/db.ts";
 
 export const insertChat = async (
-  chat: Chats,
-  client: Client
-): Promise<Chats[]> => {
+  chat: Chat,
+  client: PoolClient
+): Promise<void> => {
   const insertProps = getInsertProperties(chat);
   const insertVals = getInsertValues(insertProps);
 
   const query = `
   INSERT INTO chats (${insertProps.join(", ")})
-  VALUES (${insertVals.join(", ")})
-  RETURNING *`;
+  VALUES (${insertVals.join(", ")})`;
 
-  const values = insertProps.map((p) => chat[p as keyof Chats]);
+  const values = insertProps.map((p) => chat[p as keyof Chat]);
 
-  const result = await client.query(query, values);
-
-  return result.rows;
+  await client.queryArray<any[]>(query, values);
 };
