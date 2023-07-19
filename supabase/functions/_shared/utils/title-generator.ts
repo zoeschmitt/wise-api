@@ -33,7 +33,7 @@ const titleGenerator = async (message: string) => {
 
   const completion = await openAiResponse.json();
 
-  const title = completion.choices[0].message.connect;
+  const title = completion.choices[0].message.content;
 
   console.log(`Creating title for: ${limitedStr} - ${title}`);
 
