@@ -8,6 +8,7 @@ import { Chat, ChatRole } from "../../_shared/models/chats.ts";
 import { Conversation } from "../../_shared/models/conversations.ts";
 import { CHATGPT_MODEL } from "../../_shared/utils/constants.ts";
 import { insertChat } from "../../_shared/helpers/insert-chat.ts";
+import titleGenerator from "../../_shared/utils/title-generator.ts";
 
 interface Req {
   params: {
@@ -43,7 +44,10 @@ const handler = async (req: CompleteRequest): Promise<Response> => {
     if (!conversationId) {
       console.log(`no conversation id, creating...`);
 
-      const result = await db.queryObject<Conversation>`INSERT INTO conversations (userId) VALUES (${userId}) RETURNING *`;
+      const title = await titleGenerator(content);
+
+      const result =
+        await db.queryObject<Conversation>`INSERT INTO conversations (userId, title) VALUES (${userId}, ${title}) RETURNING *`;
 
       conversationId = (result.rows[0] as any).conversationid;
 
