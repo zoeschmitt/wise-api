@@ -1,5 +1,10 @@
-import { getInsertProperties, getInsertValues } from "../../../../supabase/functions/_shared/utils/db.ts";
+import {
+  getInsertProperties,
+  getInsertValues,
+  pool,
+} from "../../../../supabase/functions/_shared/utils/db.ts";
 import { assertEquals } from "https://deno.land/std@0.195.0/assert/assert_equals.ts";
+import { Pool } from "postgres";
 
 Deno.test(
   "getInsertProperties should extract non-null insert properties",
@@ -31,3 +36,24 @@ Deno.test("getInsertValues should generate the correct insert values", () => {
   // Assertion - Check if the actual and expected insert values match
   assertEquals(insertValues, expectedInsertValues);
 });
+
+Deno.test(
+  "pool should create a PostgreSQL connection pool with the provided database URL",
+  () => {
+    // Mock the environment variable
+    const originalEnv = Deno.env.get;
+    Deno.env.get = () =>
+      "postgres://username:password@localhost:5432/database_name";
+
+    try {
+      // Call the function to be tested
+      const dbPool = pool();
+
+      // Assertion - Check if a Pool instance is returned
+      assertEquals(dbPool instanceof Pool, true);
+    } finally {
+      // Restore the original env.get function to its previous state
+      Deno.env.get = originalEnv;
+    }
+  }
+);
