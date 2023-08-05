@@ -35,6 +35,9 @@ const handler = async (req: CompleteRequest): Promise<Response> => {
 
     const user = result.rows[0];
 
+    if (!user)
+      return apiError(ErrorCodes.NOT_FOUND, { error: "User not found." });
+
     return new Response(JSON.stringify(user), {
       headers: { "Content-Type": "application/json" },
     });
