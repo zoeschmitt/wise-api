@@ -7,24 +7,31 @@ import { ObjectSchema, object, string } from "yup";
 
 interface Req {
   params: {
-    userId: string;
+    userId?: string;
+    email?: string;
   };
 }
 
 const schema: ObjectSchema<Req> = object({
   params: object({
-    userId: string().required(),
+    userId: string(),
+    email: string(),
   }).required(),
-});
+}).test(
+  "at-least-one-property",
+  "You must provide an email or userId.",
+  (value) => !!(value.params.userId || value.params.email)
+);
 
 const handler = async (req: CompleteRequest): Promise<Response> => {
-  const { userId } = req.params;
+  const { userId, email } = req.params;
 
   const db = await pool().connect();
 
   try {
-    const result =
-      await db.queryObject<User>`SELECT * FROM users WHERE userId = ${userId}`;
+    const result = userId
+      ? await db.queryObject<User>`SELECT * FROM users WHERE userId = ${userId}`
+      : await db.queryObject<User>`SELECT * FROM users WHERE email = ${email}`;
 
     const user = result.rows[0];
 
