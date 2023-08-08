@@ -98,7 +98,7 @@ const handler = async (req: CompleteRequest): Promise<Response> => {
 
     console.log(`OpenAI response ${openAiResponse.status}`, completion);
 
-    const chatResponse = new Chat({
+    const newChat = new Chat({
       conversationId,
       userId,
       role: ChatRole.Assistant,
@@ -110,12 +110,14 @@ const handler = async (req: CompleteRequest): Promise<Response> => {
       openAiObject: completion?.object,
     });
 
-    chats.push(chatResponse);
+    chats.push(newChat);
 
     console.log(`inserting chats into db...`, chats);
 
+    let chatResponse = {}
+
     for (const chat of chats) {
-      await insertChat(chat, db);
+      chatResponse = await insertChat(chat, db);
     }
 
     console.log(`request complete`);
