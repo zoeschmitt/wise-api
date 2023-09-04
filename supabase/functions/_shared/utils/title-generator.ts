@@ -10,7 +10,7 @@ const titleGenerator = async (message: string) => {
       {
         role: "system",
         content:
-          "Create titles for the content you are provided (it may be up to 6 words).",
+          "Create titles for the content you are provided (it may be up to 6 words). Without quotation marks.",
       },
       {
         role: "user",
