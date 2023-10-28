@@ -114,7 +114,7 @@ const handler = async (req: CompleteRequest): Promise<Response> => {
 
     console.log(`inserting chats into db...`, chats);
 
-    let chatResponse = {}
+    let chatResponse: Chat | null = null;
 
     for (const chat of chats) {
       chatResponse = await insertChat(chat, db);
