@@ -5,6 +5,7 @@ import { ObjectSchema, object, string } from "yup";
 import { CHATGPT_MODEL } from "../../_shared/utils/constants.ts";
 import { hardcodedPrompt } from "./hardcodedPrompt.ts";
 import { ChatRole } from "../../_shared/models/chats.ts";
+import { CORS_HEADERS } from "../../_shared/utils/constants.ts";
 
 interface Req {
   params: {
@@ -55,8 +56,11 @@ const handler = async (req: CompleteRequest): Promise<Response> => {
     const parsedCompletion = {
       autocomplete: completion?.choices?.[0].message.content,
     };
+
+    const headers = { "Content-Type": "application/json", ...CORS_HEADERS };
+    console.log(headers);
     return new Response(JSON.stringify(parsedCompletion), {
-      headers: { "Content-Type": "application/json" },
+      headers,
     });
   } catch (error) {
     console.error("error:", error);
