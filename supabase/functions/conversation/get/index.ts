@@ -4,6 +4,7 @@ import { pool } from "../../_shared/utils/db.ts";
 import { ErrorCodes, apiError } from "../../_shared/utils/errors.ts";
 import { validate } from "../../_shared/utils/validate.ts";
 import { ObjectSchema, object, string } from "yup";
+import { CORSResponse } from "../../_shared/utils/corsResponse.ts";
 
 interface Req {
   params: {
@@ -46,9 +47,7 @@ const handler = async (req: CompleteRequest): Promise<Response> => {
 
     const conversations = result.rows[0];
 
-    return new Response(JSON.stringify(conversations), {
-      headers: { "Content-Type": "application/json" },
-    });
+    return new CORSResponse(conversations);
   } catch (error) {
     console.error("error:", error);
     return apiError(ErrorCodes.SERVER_ERROR);
