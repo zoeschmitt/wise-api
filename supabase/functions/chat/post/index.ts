@@ -59,7 +59,7 @@ const handler = async (req: CompleteRequest): Promise<Response> => {
       );
 
       const latestChats =
-        await db.queryObject<Chat>`SELECT * FROM chats WHERE conversationId = ${conversationId} ORDER BY created ASC LIMIT 5`;
+        await db.queryObject<Chat>`SELECT * FROM chats WHERE conversationId = ${conversationId} ORDER BY created DESC LIMIT 5`;
 
       openAiChats.push(
         ...latestChats.rows.map((c) => ({
