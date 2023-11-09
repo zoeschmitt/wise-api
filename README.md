@@ -21,7 +21,7 @@
 Run functions locally:
 
 ```sh
-npm run local
+deno task local
 ```
 
 The functions will automatically update when you make any changes.
@@ -29,7 +29,7 @@ The functions will automatically update when you make any changes.
 ## Deploy
 
 ```sh
-npm run deploy
+deno task deploy
 ```
 
 ## Database Migrations and Seed Data
