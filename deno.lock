@@ -106,6 +106,11 @@
     "https://deno.land/x/postgres@v0.17.0/utils/utils.ts": "19c3527ddd5c6c4c49ae36397120274c7f41f9d3cbf479cb36065d23329e9f90",
     "https://deno.land/x/xhr@0.3.0/mod.ts": "094aacd627fd9635cd942053bf8032b5223b909858fa9dc8ffa583752ff63b20",
     "https://esm.sh/openai@3.3.0": "2ff7644567c1f7422f7e818a312377975771915851a5b38709fc65fad3048cdf",
+    "https://esm.sh/openai@4.0.0": "38215ed52e7354672b0525e97c454b49eacfdc3163696580d28e565e26b1351e",
+    "https://esm.sh/v125/property-expr@2.0.5/denonext/property-expr.mjs": "a961a69cea7cb7105be9d361789bbc466e2ab859014f74629a454e7625a85ec1",
+    "https://esm.sh/v125/tiny-case@1.0.3/denonext/tiny-case.mjs": "81d85617e0f8f08193c14b1484ec7978d4e5345e93576374070462fe22dc76d7",
+    "https://esm.sh/v125/toposort@2.0.2/denonext/toposort.mjs": "bc761ac6c5d856488d3a1f1bc8903bbdb6acd98c04cf28245eeb6dfcd3867009",
+    "https://esm.sh/v125/yup@1.2.0/denonext/yup.mjs": "36d6c4f2e7d511e5f2df201e480c2d92ed4c204334342deb8887154ffc028434",
     "https://esm.sh/v128/axios@0.26.1/denonext/axios.mjs": "47a07052e9c7fb76cf4c8e88b9af352a07c8ea12840b5c0eb77c75abcf1b817a",
     "https://esm.sh/v128/axios@0.26.1/index.d.ts": "2808645b990069e5f8b5ff14c9f1e6077eb642583c3f7854012d60757f23c70e",
     "https://esm.sh/v128/form-data@4.0.0/denonext/form-data.mjs": "48e84ac3b590bc364839367938d7e48ca37615a0c66e56dcc7356c3172ec7790",
@@ -113,7 +118,18 @@
     "https://esm.sh/v128/openai@3.3.0/dist/api.d.ts": "473cef228320bd0368092ebd20ce3a698990ba26ea95ceb1b925f5eda5527f06",
     "https://esm.sh/v128/openai@3.3.0/dist/base.d.ts": "70131dedc22f10c8b5c69d8178128cd6a7b9c002c3f86bdf7b2107dbc0c81147",
     "https://esm.sh/v128/openai@3.3.0/dist/configuration.d.ts": "3ac893bb831cf929af812392e1568467766536d79abd4e29d6ae653695c18cdd",
-    "https://esm.sh/v128/openai@3.3.0/dist/index.d.ts": "277d3bd1a9e811aa5385dd88433ce420498df03d2440de1f20e6fc9200f717c9"
+    "https://esm.sh/v128/openai@3.3.0/dist/index.d.ts": "277d3bd1a9e811aa5385dd88433ce420498df03d2440de1f20e6fc9200f717c9",
+    "https://esm.sh/v133/openai@4.0.0/denonext/_shims/agent.js": "32e75b950751fb2b6f824d47792e44b912cc0fd1ba405ec3518cf575513a11c7",
+    "https://esm.sh/v133/openai@4.0.0/denonext/_shims/fetch.js": "521522b028223fb6b01580b7c2d73b3e6987f67468a28423ffdd45ccac2b18a8",
+    "https://esm.sh/v133/openai@4.0.0/denonext/_shims/fileFromPath.js": "c5e548708ccd27bf97303302835ca88f723b95ef140004da3dfc20d0f828a9d1",
+    "https://esm.sh/v133/openai@4.0.0/denonext/_shims/formdata.js": "ef5509a8039270faebfc94d9ccf42122995b4b9c500ef385a7551f089e8f6016",
+    "https://esm.sh/v133/openai@4.0.0/denonext/_shims/getMultipartRequestOptions.js": "c720e349cec1ac3f7a40c0533283d2c4ab1f2d6d5107983ac212cb1eef6983b9",
+    "https://esm.sh/v133/openai@4.0.0/denonext/_shims/node-readable.js": "c7539df283fc46b060e2393e490f8d18ad47674a6f4abcba949b9e663e5d7172",
+    "https://esm.sh/v133/openai@4.0.0/denonext/core.js": "fa629d7b46ccb2402f087fec6153f3defb73d014e391f6ca888e2abab3568697",
+    "https://esm.sh/v133/openai@4.0.0/denonext/openai.mjs": "a0ef92a7ed46ea060a6cd9a8e65f2e03530973a26731eaef2fa3f37300ee44aa",
+    "https://esm.sh/v133/openai@4.0.0/denonext/pagination.js": "b39371772311af71ccac188b3e333318e20c261827d9c2d21b0e0931f93194f3",
+    "https://esm.sh/v133/openai@4.0.0/denonext/resource.js": "01b2caf7d9bd5aa60c46c8dfe28dac0aeb64bdd4f9a8b0b2835a2694891c7fd6",
+    "https://esm.sh/yup@1.2.0": "efca4a8ca6219bbf8862723b317a1664a72106a513243bd3c34b72abe9aefa56"
   },
   "npm": {
     "specifiers": {

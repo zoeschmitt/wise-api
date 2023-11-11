@@ -1,15 +1,15 @@
-import { CompleteRequest, RequestMethod } from "../../_shared/models/requests.ts";
+import { CompleteRequest } from "../../_shared/models/requests.ts";
 import { pool } from "../../_shared/utils/db.ts";
-import { ErrorCodes, apiError } from "../../_shared/utils/errors.ts";
 import { validate } from "../../_shared/utils/validate.ts";
 import { ObjectSchema, object, string } from "yup";
-import { CreateChatCompletionRequest } from "openai";
+import { CreateChatCompletionRequest, OpenAI } from "openai";
 import { Chat, ChatRole } from "../../_shared/models/chats.ts";
 import { Conversation } from "../../_shared/models/conversations.ts";
-import { CHATGPT_MODEL, OPEN_AI_URLS } from "../../_shared/utils/constants.ts";
+import { CHATGPT_MODEL } from "../../_shared/utils/constants.ts";
 import { insertChat } from "../../_shared/helpers/insert-chat.ts";
-import { CORSResponse } from "../../_shared/utils/corsResponse.ts";
-import { openAiRequest } from "../../_shared/utils/openai-request.ts";
+import { CORS_HEADERS } from "../../_shared/utils/corsResponse.ts";
+import { WiseError } from "../../_shared/models/wise-error.ts";
+import { processChunks } from "../../_shared/utils/stream-utils.ts";
 
 interface Req {
   params: {
@@ -31,94 +31,167 @@ const schema: ObjectSchema<Req> = object({
   }),
 });
 
-const handler = async (req: CompleteRequest): Promise<Response> => {
-  const { content } = req.body;
-  const { userId } = req.params;
-  let conversationId = req.params.conversationId;
+const openAiKey = Deno.env.get("OPENAI");
 
+const handler = async (req: CompleteRequest): Promise<Response> => {
   const db = await pool().connect();
 
   try {
-    const openAiChats = [];
-    const chats: Chat[] = [];
+    const { content } = req.body;
+    const { userId } = req.params;
+    let conversationId = req.params.conversationId;
 
+    const openai = new OpenAI({ apiKey: openAiKey });
+
+    const sanitizedQuery = content.trim();
+
+    console.log("sanitizedQuery", sanitizedQuery);
+
+    // Moderate the content to comply with OpenAI T&C
+    const moderationResponse = await openai.moderations.create({
+      input: sanitizedQuery,
+    });
+
+    const [results] = moderationResponse.results;
+
+    if (results.flagged) {
+      console.log("Results flagged by OpenAI", moderationResponse);
+
+      throw new WiseError("Flagged content", {
+        flagged: true,
+        categories: results.categories,
+      });
+    }
+
+    const openaiMessages = [];
+
+    // If no conversationId, create one. Else fetch latest chats for existing conversation.
     if (!conversationId) {
-      console.log(`no conversation id, creating...`);
-
       const result =
         await db.queryObject<Conversation>`INSERT INTO conversations (userId) VALUES (${userId}) RETURNING *`;
 
       conversationId = (result.rows[0] as any).conversationid;
 
-      console.log(`created conversation with id: ${conversationId}`);
+      console.log(`Created conversation: ${conversationId}`);
     } else {
-      console.log(
-        `fetching latest chats for conversation id: ${conversationId}`
-      );
+      console.log(`Fetching chats for conversation: ${conversationId}`);
 
-      const latestChats =
+      const latestMessages =
         await db.queryObject<Chat>`SELECT * FROM chats WHERE conversationId = ${conversationId} ORDER BY created DESC LIMIT 5`;
 
-      openAiChats.push(
-        ...latestChats.rows.map((c) => ({
+      openaiMessages.push(
+        ...latestMessages.rows.map((c) => ({
           role: c.role,
           content: c.content,
         }))
       );
     }
 
-    openAiChats.push({ role: ChatRole.User, content });
+    console.log("inserting chat");
 
-    chats.push(new Chat({ conversationId, userId, content }));
+    // Insert new user chat to db.
+    await insertChat(
+      new Chat({ conversationId, userId, content: sanitizedQuery }),
+      db
+    );
 
-    console.log(`sending ${openAiChats.length} chats to OpenAI...`);
+    // Add chat to openai message list for request.
+    openaiMessages.push({ role: ChatRole.User, content: sanitizedQuery });
 
     const openaiRequest: CreateChatCompletionRequest = {
       model: CHATGPT_MODEL,
-      messages: openAiChats,
+      messages: openaiMessages,
       temperature: 0,
+      stream: true,
+      // max_tokens: 512, // TODO: figure out our limit.
     };
 
     console.log("Chat Request", openaiRequest);
 
-    const openAiResponse = await openAiRequest({
-      url: OPEN_AI_URLS.chatCompletion,
-      type: RequestMethod.POST,
-      body: JSON.stringify(openaiRequest),
+    const { response } = await openai.chat.completions.create(openaiRequest);
+
+    console.log(response);
+
+    const reader = response.body.getReader();
+    let firstChunk: OpenAI.Chat.ChatCompletion;
+    // Accumulate the entire value
+    let accumulatedMessage = "";
+
+    // Add new chat to db when stream is done.
+    const stream = new ReadableStream({
+      async start(controller) {
+        while (true) {
+          const { done, value } = await reader.read();
+
+          if (done) {
+            const newChat = new Chat({
+              conversationId,
+              userId,
+              role: ChatRole.Assistant,
+              content: accumulatedMessage,
+              openAiModel: firstChunk?.model,
+              openAiId: firstChunk?.id,
+              openAiObject: firstChunk?.object,
+            });
+
+            await insertChat(newChat, db);
+
+            controller.close();
+
+            break;
+          }
+
+          // Process and send the value to the user.
+          controller.enqueue(value);
+
+          const chatCompletions = processChunks(value);
+
+          if (chatCompletions && chatCompletions.length > 0) {
+            firstChunk ??= chatCompletions[0];
+
+            chatCompletions.forEach(
+              (completion) =>
+                (accumulatedMessage +=
+                  completion.choices?.[0]?.delta?.content ?? "")
+            );
+          }
+        }
+      },
     });
 
-    const completion = await openAiResponse.json();
-
-    console.log(`OpenAI response ${openAiResponse.status}`, completion);
-
-    const newChat = new Chat({
-      conversationId,
-      userId,
-      role: ChatRole.Assistant,
-      content: completion?.choices?.[0].message?.content,
-      promptTokens: completion?.usage?.prompt_tokens,
-      completionTokens: completion?.usage?.completion_tokens,
-      openAiModel: completion?.model,
-      openAiId: completion?.id,
-      openAiObject: completion?.object,
+    // Proxy the streamed SSE response from OpenAI
+    return new Response(stream, {
+      headers: {
+        ...CORS_HEADERS,
+        "Content-Type": "text/event-stream",
+      },
     });
-
-    chats.push(newChat);
-
-    console.log(`inserting chats into db...`, chats);
-
-    let chatResponse: Chat | null = null;
-
-    for (const chat of chats) {
-      chatResponse = await insertChat(chat, db);
+  } catch (error) {
+    if (error instanceof OpenAI.APIError || error instanceof WiseError) {
+      console.error("OpenAI error: ", error);
+      return new Response(
+        JSON.stringify({
+          error: error.message,
+        }),
+        {
+          status: error.status,
+          headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+        }
+      );
     }
 
-    console.log(`request complete`);
+    // Print out unexpected errors to help with debugging
+    console.error(error);
 
-    return new CORSResponse(chatResponse);
-  } catch (error) {
-    console.error("error:", error);
-    return apiError(ErrorCodes.SERVER_ERROR);
+    return new Response(
+      JSON.stringify({
+        error: "There was an error processing your request",
+      }),
+      {
+        status: 500,
+        headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+      }
+    );
   } finally {
     await db.end();
   }

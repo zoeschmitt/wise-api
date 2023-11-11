@@ -29,10 +29,13 @@ const handler = async (req: CompleteRequest): Promise<Response> => {
   const db = await pool().connect();
 
   try {
+
+    console.log("Generating title for conversation", conversationId);
+
     const firstChat =
       await db.queryObject<Chat>`SELECT * FROM chats WHERE conversationId = ${conversationId} ORDER BY created LIMIT 1`;
 
-    console.log("First chat for conversation", firstChat.rows[0].content);
+    console.log("First chat for conversation", firstChat.rows);
 
     const title = await titleGenerator(firstChat.rows[0].content);
 
