@@ -1,5 +1,7 @@
 import { CreateChatCompletionRequest } from "openai";
-import { CHATGPT_MODEL } from "./constants.ts";
+import { CHATGPT_MODEL, OPEN_AI_URLS } from "./constants.ts";
+import { RequestMethod } from "../models/requests.ts";
+import { openAiRequest } from "./openai-request.ts";
 
 const titleGenerator = async (message: string) => {
   const limitedStr = message.substring(0, 500);
@@ -10,7 +12,7 @@ const titleGenerator = async (message: string) => {
       {
         role: "system",
         content:
-          "Create titles for the content you are provided. The title cannot be more than 5 words. Without quotation marks.",
+          "You will be provided with the first message in a conversation, and your task is to generate a title for this conversation up to 6 words.",
       },
       {
         role: "user",
@@ -19,17 +21,11 @@ const titleGenerator = async (message: string) => {
     ],
   };
 
-  const openAiResponse = await fetch(
-    "https://api.openai.com/v1/chat/completions",
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${Deno.env.get("OPENAI")}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(openaiRequest),
-    }
-  );
+  const openAiResponse = await openAiRequest({
+    url: OPEN_AI_URLS.chatCompletion,
+    type: RequestMethod.POST,
+    body: JSON.stringify(openaiRequest),
+  });
 
   const completion = await openAiResponse.json();
 
@@ -37,7 +33,7 @@ const titleGenerator = async (message: string) => {
 
   console.log(`Creating title for: ${limitedStr} - ${title}`);
 
-  return title ?? message.substring(0, 30);
+  return title ?? message.substring(0, 50);
 };
 
 export default titleGenerator;

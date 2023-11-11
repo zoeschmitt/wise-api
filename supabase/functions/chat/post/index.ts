@@ -1,4 +1,4 @@
-import { CompleteRequest } from "../../_shared/models/requests.ts";
+import { CompleteRequest, RequestMethod } from "../../_shared/models/requests.ts";
 import { pool } from "../../_shared/utils/db.ts";
 import { ErrorCodes, apiError } from "../../_shared/utils/errors.ts";
 import { validate } from "../../_shared/utils/validate.ts";
@@ -6,10 +6,10 @@ import { ObjectSchema, object, string } from "yup";
 import { CreateChatCompletionRequest } from "openai";
 import { Chat, ChatRole } from "../../_shared/models/chats.ts";
 import { Conversation } from "../../_shared/models/conversations.ts";
-import { CHATGPT_MODEL } from "../../_shared/utils/constants.ts";
+import { CHATGPT_MODEL, OPEN_AI_URLS } from "../../_shared/utils/constants.ts";
 import { insertChat } from "../../_shared/helpers/insert-chat.ts";
-import titleGenerator from "../../_shared/utils/title-generator.ts";
 import { CORSResponse } from "../../_shared/utils/corsResponse.ts";
+import { openAiRequest } from "../../_shared/utils/openai-request.ts";
 
 interface Req {
   params: {
@@ -45,10 +45,8 @@ const handler = async (req: CompleteRequest): Promise<Response> => {
     if (!conversationId) {
       console.log(`no conversation id, creating...`);
 
-      const title = await titleGenerator(content);
-
       const result =
-        await db.queryObject<Conversation>`INSERT INTO conversations (userId, title) VALUES (${userId}, ${title}) RETURNING *`;
+        await db.queryObject<Conversation>`INSERT INTO conversations (userId) VALUES (${userId}) RETURNING *`;
 
       conversationId = (result.rows[0] as any).conversationid;
 
@@ -83,17 +81,11 @@ const handler = async (req: CompleteRequest): Promise<Response> => {
 
     console.log("Chat Request", openaiRequest);
 
-    const openAiResponse = await fetch(
-      "https://api.openai.com/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${Deno.env.get("OPENAI")}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(openaiRequest),
-      }
-    );
+    const openAiResponse = await openAiRequest({
+      url: OPEN_AI_URLS.chatCompletion,
+      type: RequestMethod.POST,
+      body: JSON.stringify(openaiRequest),
+    });
 
     const completion = await openAiResponse.json();
 
