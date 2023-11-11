@@ -9,6 +9,7 @@ import { Conversation } from "../../_shared/models/conversations.ts";
 import { CHATGPT_MODEL } from "../../_shared/utils/constants.ts";
 import { insertChat } from "../../_shared/helpers/insert-chat.ts";
 import titleGenerator from "../../_shared/utils/title-generator.ts";
+import { CORSResponse } from "../../_shared/utils/corsResponse.ts";
 
 interface Req {
   params: {
@@ -122,9 +123,7 @@ const handler = async (req: CompleteRequest): Promise<Response> => {
 
     console.log(`request complete`);
 
-    return new Response(JSON.stringify(chatResponse), {
-      headers: { "Content-Type": "application/json" },
-    });
+    return new CORSResponse(chatResponse);
   } catch (error) {
     console.error("error:", error);
     return apiError(ErrorCodes.SERVER_ERROR);
