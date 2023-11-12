@@ -1,9 +1,8 @@
 import { CreateChatCompletionRequest } from "openai";
-import { CHATGPT_MODEL, OPEN_AI_URLS } from "./constants.ts";
-import { RequestMethod } from "../models/requests.ts";
-import { openAiRequest } from "./openai-request.ts";
+import { CHATGPT_MODEL } from "./constants.ts";
+import { OpenAI } from "https://esm.sh/openai@4.0.0";
 
-const titleGenerator = async (message: string) => {
+const titleGenerator = async (openai: OpenAI, message: string) => {
   const limitedStr = message.substring(0, 500);
 
   const openaiRequest: CreateChatCompletionRequest = {
@@ -21,15 +20,8 @@ const titleGenerator = async (message: string) => {
     ],
   };
 
-  const openAiResponse = await openAiRequest({
-    url: OPEN_AI_URLS.chatCompletion,
-    type: RequestMethod.POST,
-    body: JSON.stringify(openaiRequest),
-  });
-
-  const completion = await openAiResponse.json();
-
-  const title = completion.choices[0].message.content;
+  const chatCompletion = await openai.chat.completions.create(openaiRequest);
+  const title = chatCompletion.choices[0].message
 
   console.log(`Creating title for: ${limitedStr} - ${title}`);
 

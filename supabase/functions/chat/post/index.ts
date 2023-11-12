@@ -33,6 +33,9 @@ const schema: ObjectSchema<Req> = object({
 
 const openAiKey = Deno.env.get("OPENAI");
 
+const SYSTEM_MESSAGE =
+  "You are a helpful and knowledgeable AI friend. I know you are an AI and have no physical form or feelings, so there is no need to disclose this information.";
+
 const handler = async (req: CompleteRequest): Promise<Response> => {
   const db = await pool().connect();
 
@@ -63,7 +66,7 @@ const handler = async (req: CompleteRequest): Promise<Response> => {
       });
     }
 
-    const openaiMessages = [];
+    const messages = [];
 
     // If no conversationId, create one. Else fetch latest chats for existing conversation.
     if (!conversationId) {
@@ -76,10 +79,19 @@ const handler = async (req: CompleteRequest): Promise<Response> => {
     } else {
       console.log(`Fetching chats for conversation: ${conversationId}`);
 
-      const latestMessages =
-        await db.queryObject<Chat>`SELECT * FROM chats WHERE conversationId = ${conversationId} ORDER BY created DESC LIMIT 5`;
+      const latestMessages = await db.queryObject<Chat>`
+      SELECT * 
+      FROM (
+        SELECT * 
+        FROM chats 
+        WHERE conversationId = ${conversationId} 
+        ORDER BY created DESC 
+        LIMIT 5
+      ) AS subquery
+      ORDER BY created ASC;
+    `;
 
-      openaiMessages.push(
+      messages.push(
         ...latestMessages.rows.map((c) => ({
           role: c.role,
           content: c.content,
@@ -87,20 +99,24 @@ const handler = async (req: CompleteRequest): Promise<Response> => {
       );
     }
 
-    console.log("inserting chat");
-
     // Insert new user chat to db.
     await insertChat(
       new Chat({ conversationId, userId, content: sanitizedQuery }),
       db
     );
 
+    if (messages.length < 1) {
+      messages.push({ role: ChatRole.System, content: SYSTEM_MESSAGE });
+    }
+
     // Add chat to openai message list for request.
-    openaiMessages.push({ role: ChatRole.User, content: sanitizedQuery });
+    messages.push({ role: ChatRole.User, content: sanitizedQuery });
+
+    console.log("messages", messages);
 
     const openaiRequest: CreateChatCompletionRequest = {
       model: CHATGPT_MODEL,
-      messages: openaiMessages,
+      messages: messages,
       temperature: 0,
       stream: true,
       // max_tokens: 512, // TODO: figure out our limit.
@@ -110,12 +126,16 @@ const handler = async (req: CompleteRequest): Promise<Response> => {
 
     const { response } = await openai.chat.completions.create(openaiRequest);
 
-    console.log(response);
-
     const reader = response.body.getReader();
     let firstChunk: OpenAI.Chat.ChatCompletion;
     // Accumulate the entire value
     let accumulatedMessage = "";
+
+    const chat = new Chat({
+      conversationId,
+      userId,
+      role: ChatRole.Assistant,
+    });
 
     // Add new chat to db when stream is done.
     const stream = new ReadableStream({
@@ -124,20 +144,20 @@ const handler = async (req: CompleteRequest): Promise<Response> => {
           const { done, value } = await reader.read();
 
           if (done) {
-            const newChat = new Chat({
-              conversationId,
-              userId,
-              role: ChatRole.Assistant,
-              content: accumulatedMessage,
-              openAiModel: firstChunk?.model,
-              openAiId: firstChunk?.id,
-              openAiObject: firstChunk?.object,
-            });
+            console.log("Stream complete.");
 
-            await insertChat(newChat, db);
+            chat.content = accumulatedMessage;
+            chat.openAiModel = firstChunk?.model;
+            chat.openAiId = firstChunk?.id;
+            chat.openAiObject = firstChunk?.object;
+
+            await insertChat(chat, db);
 
             controller.close();
 
+            await db.end();
+
+            console.log("Controller closed.");
             break;
           }
 
@@ -145,7 +165,6 @@ const handler = async (req: CompleteRequest): Promise<Response> => {
           controller.enqueue(value);
 
           const chatCompletions = processChunks(value);
-
           if (chatCompletions && chatCompletions.length > 0) {
             firstChunk ??= chatCompletions[0];
 
@@ -159,6 +178,8 @@ const handler = async (req: CompleteRequest): Promise<Response> => {
       },
     });
 
+    console.log("Proxying stream.");
+
     // Proxy the streamed SSE response from OpenAI
     return new Response(stream, {
       headers: {
@@ -167,6 +188,8 @@ const handler = async (req: CompleteRequest): Promise<Response> => {
       },
     });
   } catch (error) {
+    await db.end();
+
     if (error instanceof OpenAI.APIError || error instanceof WiseError) {
       console.error("OpenAI error: ", error);
       return new Response(
@@ -192,8 +215,6 @@ const handler = async (req: CompleteRequest): Promise<Response> => {
         headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
       }
     );
-  } finally {
-    await db.end();
   }
 };
 

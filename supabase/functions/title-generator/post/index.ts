@@ -6,6 +6,7 @@ import { ObjectSchema, object, string } from "yup";
 import { CORSResponse } from "../../_shared/utils/corsResponse.ts";
 import { Chat } from "../../_shared/models/chats.ts";
 import titleGenerator from "../../_shared/utils/title-generator.ts";
+import { OpenAI } from "https://esm.sh/openai@4.0.0";
 
 interface Req {
   body: {
@@ -23,12 +24,15 @@ const schema: ObjectSchema<Req> = object({
   }),
 });
 
+const openAiKey = Deno.env.get("OPENAI");
+
 const handler = async (req: CompleteRequest): Promise<Response> => {
   const { conversationid: conversationId } = req.body.record;
 
   const db = await pool().connect();
 
   try {
+    const openai = new OpenAI({ apiKey: openAiKey });
 
     console.log("Generating title for conversation", conversationId);
 
@@ -37,7 +41,7 @@ const handler = async (req: CompleteRequest): Promise<Response> => {
 
     console.log("First chat for conversation", firstChat.rows);
 
-    const title = await titleGenerator(firstChat.rows[0].content);
+    const title = await titleGenerator(openai, firstChat.rows[0].content);
 
     console.log("Generated title", title);
 
