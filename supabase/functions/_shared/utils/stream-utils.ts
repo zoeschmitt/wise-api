@@ -8,30 +8,28 @@ import { OpenAI } from "https://esm.sh/openai@4.0.0";
  */
 export const processChunks = (value: Uint8Array) => {
   const results: OpenAI.Chat.ChatCompletion[] = [];
-  // Assuming 'value' is a Uint8Array
-  const rawData = new TextDecoder().decode(value);
+  try {
+    // Assuming 'value' is a Uint8Array
+    const rawData = new TextDecoder().decode(value);
 
-  // Split the data into individual chunks based on the SSE format
-  const chunks = rawData.split(/\n\n/);
+    // Split the data into individual chunks based on the SSE format
+    const chunks = rawData.split(/\n\n/);
 
-  // Process each chunk
-  chunks.forEach((chunk) => {
-    if (chunk.trim() !== "" && !chunk.includes("[DONE]")) {
-      // Remove the "data: " prefix
-      const jsonData = chunk.replace(/^data:\s*/, "");
+    // Process each chunk
+    chunks.forEach((chunk) => {
+      if (chunk.trim() !== "" && !chunk.includes("[DONE]")) {
+        // Remove the "data: " prefix
+        const jsonData = chunk.replace(/^data:\s*/, "");
 
-      try {
         // Now 'jsonData' contains the JSON-encoded string without the prefix
         const jsonObject = JSON.parse(jsonData);
         results.push(jsonObject);
-      } catch (error) {
-        console.error("Error parsing JSON:", error);
-        throw error;
       }
-    }
-  });
-
-  console.log(results);
+    });
+  } catch (error) {
+    console.error("Error processing chunks:", error);
+    throw error;
+  }
 
   return results;
 };
