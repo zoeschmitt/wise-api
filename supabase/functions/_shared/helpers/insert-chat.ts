@@ -19,19 +19,24 @@ import { getInsertProperties, getInsertValues } from "../utils/db.ts";
 export const insertChat = async (
   chat: Chat,
   client: PoolClient
-): Promise<Chat> => {
-  const insertProps = getInsertProperties(chat);
-  const insertVals = getInsertValues(insertProps);
+): Promise<Chat | undefined> => {
+  try {
+    const insertProps = getInsertProperties(chat);
+    const insertVals = getInsertValues(insertProps);
 
-  const query = `
+    const query = `
   INSERT INTO chats (${insertProps.join(", ")})
   VALUES (${insertVals.join(", ")})
   RETURNING *
   `;
 
-  const values = insertProps.map((p) => chat[p as keyof Chat]);
+    const values = insertProps.map((p) => chat[p as keyof Chat]);
 
-  const result = await client.queryObject<Chat>(query, values);
+    const result = await client.queryObject<Chat>(query, values);
 
-  return result.rows[0];
+    return result.rows[0];
+  } catch (error) {
+    console.log("Error inserting chat", chat, error);
+    throw error;
+  }
 };
