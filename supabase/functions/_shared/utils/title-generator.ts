@@ -21,7 +21,7 @@ const titleGenerator = async (openai: OpenAI, message: string) => {
   };
 
   const chatCompletion = await openai.chat.completions.create(openaiRequest);
-  const title = chatCompletion.choices[0].message
+  const title = chatCompletion.choices[0].message.content;
 
   console.log(`Creating title for: ${limitedStr} - ${title}`);
 
