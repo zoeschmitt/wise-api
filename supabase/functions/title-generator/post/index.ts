@@ -4,9 +4,9 @@ import { ErrorCodes, apiError } from "../../_shared/utils/errors.ts";
 import { validate } from "../../_shared/utils/validate.ts";
 import { ObjectSchema, object, string } from "yup";
 import { CORSResponse } from "../../_shared/utils/corsResponse.ts";
-import { Chat } from "../../_shared/models/chats.ts";
 import titleGenerator from "../../_shared/utils/title-generator.ts";
 import { OpenAI } from "https://esm.sh/openai@4.0.0";
+import { Message } from "../../_shared/models/conversations.ts";
 
 interface Req {
   body: {
@@ -36,12 +36,12 @@ const handler = async (req: CompleteRequest): Promise<Response> => {
 
     console.log("Generating title for conversation", conversationId);
 
-    const firstChat =
-      await db.queryObject<Chat>`SELECT * FROM chats WHERE conversationId = ${conversationId} ORDER BY created LIMIT 1`;
+    const firstMsg =
+      await db.queryObject<Message>`SELECT * FROM messages WHERE conversationId = ${conversationId} ORDER BY created LIMIT 1`;
 
-    console.log("First chat for conversation", firstChat.rows);
+    console.log("First message for conversation", firstMsg.rows);
 
-    const title = await titleGenerator(openai, firstChat.rows[0].content);
+    const title = await titleGenerator(openai, firstMsg.rows[0].content);
 
     console.log("Generated title", title);
 
