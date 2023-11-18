@@ -3,8 +3,15 @@ import { pool } from "../../_shared/utils/db.ts";
 import { validate } from "../../_shared/utils/validate.ts";
 import { ObjectSchema, object, string } from "yup";
 import { CreateChatCompletionRequest, OpenAI } from "openai";
-import { Conversation, Message, Role } from "../../_shared/models/conversations.ts";
-import { CHATGPT_MODEL } from "../../_shared/utils/constants.ts";
+import {
+  Conversation,
+  Message,
+  Role,
+} from "../../_shared/models/conversations.ts";
+import {
+  CHATGPT_MODEL,
+  WISE_CONVERSATION_HEADER,
+} from "../../_shared/utils/constants.ts";
 import { CORS_HEADERS } from "../../_shared/utils/corsResponse.ts";
 import { WiseError } from "../../_shared/models/wise-error.ts";
 import { processChunks } from "../../_shared/utils/stream-utils.ts";
@@ -183,6 +190,7 @@ const handler = async (req: CompleteRequest): Promise<Response> => {
     return new Response(stream, {
       headers: {
         ...CORS_HEADERS,
+        [WISE_CONVERSATION_HEADER]: conversationId,
         "Content-Type": "text/event-stream",
       },
     });
