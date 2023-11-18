@@ -30,11 +30,11 @@ const handler = async (req: CompleteRequest): Promise<Response> => {
         c.title,
         c.created,
         c.updated,
-        json_agg(ch) AS chats
+        json_agg(ch) AS messages
       FROM
         public.conversations AS c
       JOIN
-        public.chats AS ch
+        public.messages AS ch
         ON c.conversationid = ch.conversationid
       WHERE
         c.conversationid = ${conversationId}
