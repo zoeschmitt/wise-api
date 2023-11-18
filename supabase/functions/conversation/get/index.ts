@@ -30,7 +30,7 @@ const handler = async (req: CompleteRequest): Promise<Response> => {
         c.title,
         c.created,
         c.updated,
-        json_agg(ch) AS messages
+        json_agg(ch) AS items
       FROM
         public.conversations AS c
       JOIN
