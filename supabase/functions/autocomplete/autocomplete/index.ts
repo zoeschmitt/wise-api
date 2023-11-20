@@ -4,8 +4,8 @@ import { validate } from "../../_shared/utils/validate.ts";
 import { ObjectSchema, object, string } from "yup";
 import { CHATGPT_MODEL } from "../../_shared/utils/constants.ts";
 import { hardcodedPrompt } from "./hardcodedPrompt.ts";
-import { ChatRole } from "../../_shared/models/chats.ts";
 import { CORSResponse } from "../../_shared/utils/corsResponse.ts";
+import { Role } from "../../_shared/models/conversations.ts";
 
 interface Req {
   params: {
@@ -31,7 +31,7 @@ const handler = async (req: CompleteRequest): Promise<Response> => {
 
   const openAiChats = [];
   const autocompleteChat = hardcodedPrompt.concat(content);
-  openAiChats.push({ role: ChatRole.User, content: autocompleteChat });
+  openAiChats.push({ role: Role.User, content: autocompleteChat });
 
   try {
     const openaiRequest = {

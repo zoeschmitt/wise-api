@@ -3,13 +3,19 @@ import { pool } from "../../_shared/utils/db.ts";
 import { validate } from "../../_shared/utils/validate.ts";
 import { ObjectSchema, object, string } from "yup";
 import { CreateChatCompletionRequest, OpenAI } from "openai";
-import { Chat, ChatRole } from "../../_shared/models/chats.ts";
-import { Conversation } from "../../_shared/models/conversations.ts";
-import { CHATGPT_MODEL } from "../../_shared/utils/constants.ts";
-import { insertChat } from "../../_shared/helpers/insert-chat.ts";
+import {
+  Conversation,
+  Message,
+  Role,
+} from "../../_shared/models/conversations.ts";
+import {
+  CHATGPT_MODEL,
+  WISE_CONVERSATION_HEADER,
+} from "../../_shared/utils/constants.ts";
 import { CORS_HEADERS } from "../../_shared/utils/corsResponse.ts";
 import { WiseError } from "../../_shared/models/wise-error.ts";
 import { processChunks } from "../../_shared/utils/stream-utils.ts";
+import { insertMessage } from "../../_shared/helpers/insert-message.ts";
 
 interface Req {
   params: {
@@ -68,7 +74,7 @@ const handler = async (req: CompleteRequest): Promise<Response> => {
 
     const messages = [];
 
-    // If no conversationId, create one. Else fetch latest chats for existing conversation.
+    // If no conversationId, create one. Else fetch latest messages for existing conversation.
     if (!conversationId) {
       const result =
         await db.queryObject<Conversation>`INSERT INTO conversations (userId) VALUES (${userId}) RETURNING *`;
@@ -77,13 +83,13 @@ const handler = async (req: CompleteRequest): Promise<Response> => {
 
       console.log(`Created conversation: ${conversationId}`);
     } else {
-      console.log(`Fetching chats for conversation: ${conversationId}`);
+      console.log(`Fetching messages for conversation: ${conversationId}`);
 
-      const latestMessages = await db.queryObject<Chat>`
+      const latestMessages = await db.queryObject<Message>`
       SELECT * 
       FROM (
         SELECT * 
-        FROM chats 
+        FROM messages 
         WHERE conversationId = ${conversationId} 
         ORDER BY created DESC 
         LIMIT 5
@@ -99,18 +105,18 @@ const handler = async (req: CompleteRequest): Promise<Response> => {
       );
     }
 
-    // Insert new user chat to db.
-    await insertChat(
-      new Chat({ conversationId, userId, content: sanitizedQuery }),
+    // Insert new user message to db.
+    await insertMessage(
+      new Message({ conversationId, userId, content: sanitizedQuery }),
       db
     );
 
     if (messages.length < 1) {
-      messages.push({ role: ChatRole.System, content: SYSTEM_MESSAGE });
+      messages.push({ role: Role.System, content: SYSTEM_MESSAGE });
     }
 
-    // Add chat to openai message list for request.
-    messages.push({ role: ChatRole.User, content: sanitizedQuery });
+    // Add message to openai message list for request.
+    messages.push({ role: Role.User, content: sanitizedQuery });
 
     console.log("messages", messages);
 
@@ -131,13 +137,13 @@ const handler = async (req: CompleteRequest): Promise<Response> => {
     // Accumulate the entire value
     let accumulatedMessage = "";
 
-    const chat = new Chat({
+    const message = new Message({
       conversationId,
       userId,
-      role: ChatRole.Assistant,
+      role: Role.Assistant,
     });
 
-    // Add new chat to db when stream is done.
+    // Add new message to db when stream is done.
     const stream = new ReadableStream({
       async start(controller) {
         while (true) {
@@ -146,12 +152,12 @@ const handler = async (req: CompleteRequest): Promise<Response> => {
           if (done) {
             console.log("Stream complete.");
 
-            chat.content = accumulatedMessage;
-            chat.openAiModel = firstChunk?.model;
-            chat.openAiId = firstChunk?.id;
-            chat.openAiObject = firstChunk?.object;
+            message.content = accumulatedMessage;
+            message.openAiModel = firstChunk?.model;
+            message.openAiId = firstChunk?.id;
+            message.openAiObject = firstChunk?.object;
 
-            await insertChat(chat, db);
+            await insertMessage(message, db);
 
             controller.close();
 
@@ -184,6 +190,7 @@ const handler = async (req: CompleteRequest): Promise<Response> => {
     return new Response(stream, {
       headers: {
         ...CORS_HEADERS,
+        [WISE_CONVERSATION_HEADER]: conversationId,
         "Content-Type": "text/event-stream",
       },
     });
@@ -218,4 +225,4 @@ const handler = async (req: CompleteRequest): Promise<Response> => {
   }
 };
 
-export const postChat = validate(handler, schema);
+export const postConversation = validate(handler, schema);
