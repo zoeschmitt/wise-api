@@ -9,8 +9,7 @@ import { Role } from "../../_shared/models/conversations.ts";
 
 interface Req {
   params: {
-    // TODO auth token
-    userId: string;
+    userId?: string;
   };
   body: {
     content: string;
@@ -19,7 +18,7 @@ interface Req {
 
 const schema: ObjectSchema<Req> = object({
   params: object({
-    userId: string().required(),
+    userId: string(),
   }),
   body: object({
     content: string().required(),
