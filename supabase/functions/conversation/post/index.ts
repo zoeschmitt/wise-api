@@ -44,7 +44,7 @@ const SYSTEM_MESSAGE =
 
 const handler = async (req: CompleteRequest): Promise<Response> => {
   const db = await pool().connect();
-
+  
   try {
     const { content } = req.body;
     const { userId } = req.params;

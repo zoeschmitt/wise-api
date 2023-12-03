@@ -5,12 +5,13 @@ import { ObjectSchema, object, string } from "yup";
 import { CHATGPT_MODEL } from "../../_shared/utils/constants.ts";
 import { hardcodedPrompt } from "./hardcodedPrompt.ts";
 import { CORSResponse } from "../../_shared/utils/corsResponse.ts";
+import { CreateChatCompletionRequest, OpenAI } from "openai";
 import { Role } from "../../_shared/models/conversations.ts";
+import { CORS_HEADERS } from "../../_shared/utils/corsResponse.ts";
 
 interface Req {
   params: {
-    // TODO auth token
-    userId: string;
+    userId?: string;
   };
   body: {
     content: string;
@@ -19,7 +20,7 @@ interface Req {
 
 const schema: ObjectSchema<Req> = object({
   params: object({
-    userId: string().required(),
+    userId: string(),
   }),
   body: object({
     content: string().required(),
@@ -33,31 +34,44 @@ const handler = async (req: CompleteRequest): Promise<Response> => {
   const autocompleteChat = hardcodedPrompt.concat(content);
   openAiChats.push({ role: Role.User, content: autocompleteChat });
 
+  const openAiKey = Deno.env.get("OPENAI");
+  // TODO sanitize autocompletes
   try {
-    const openaiRequest = {
+    const openaiRequest: CreateChatCompletionRequest = {
       model: CHATGPT_MODEL,
       messages: openAiChats,
       temperature: 0,
+      stream: true,
     };
 
-    const openAiResponse = await fetch(
-      "https://api.openai.com/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${Deno.env.get("OPENAI")}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(openaiRequest),
-      }
-    );
-    const completion = await openAiResponse.json();
+    const openai = new OpenAI({ apiKey: openAiKey });
 
-    const parsedCompletion = {
-      autocomplete: completion?.choices?.[0].message.content,
-    };
+    const { response } = await openai.chat.completions.create(openaiRequest);
 
-    return new CORSResponse(parsedCompletion);
+    const reader = response.body.getReader();
+
+    const stream = new ReadableStream({
+      async start(controller) {
+        const processChunks = async () => {
+          const { done, value } = await reader.read();
+          if (done) {
+            console.log("Stream complete");
+            return;
+          }
+
+          controller.enqueue(value);
+          await processChunks();
+        };
+        await processChunks();
+        controller.close();
+      },
+    });
+
+    return new CORSResponse(stream, {
+      headers: {
+        "Content-Type": "text/event-stream",
+      },
+    });
   } catch (error) {
     console.error("error:", error);
     return apiError(ErrorCodes.SERVER_ERROR);
