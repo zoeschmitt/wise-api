@@ -16,10 +16,7 @@ export class CORSResponse extends Response {
     };
     !("Content-Type" in headers) &&
       headers["Content-Type"] === "application/json";
-    const responseBody =
-      headers["Content-Type"] === "application/json"
-        ? JSON.stringify(body)
-        : body;
-    super(responseBody, { ...init, headers });
+
+    super(body, { ...init, headers });
   }
 }
