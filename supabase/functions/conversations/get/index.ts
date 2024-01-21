@@ -25,7 +25,7 @@ const handler = async (req: CompleteRequest): Promise<Response> => {
 
   try {
     const result =
-      await db.queryObject<Conversation>`SELECT * FROM conversations WHERE userId = ${userId} ORDER BY created DESC`;
+      await db.queryObject<Conversation>`SELECT * FROM conversations WHERE userId = ${userId} ORDER BY updated DESC`;
 
     const conversations = result.rows;
 
