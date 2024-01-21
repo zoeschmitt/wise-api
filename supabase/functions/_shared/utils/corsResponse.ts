@@ -12,7 +12,7 @@ export class CORSResponse extends Response {
     };
     const headers: { [key: string]: string } = {
       ...defaultHeaders,
-      ...init?.headers,
+      ...init?.headers as Record<string, string>,
     };
     !("Content-Type" in headers) &&
       headers["Content-Type"] === "application/json";
