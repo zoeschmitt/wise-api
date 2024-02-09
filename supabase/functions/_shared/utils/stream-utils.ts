@@ -19,7 +19,7 @@ export const processChunks = (value: Uint8Array) => {
     chunks.forEach((chunk) => {
       if (chunk.trim() !== "" && !chunk.includes("[DONE]")) {
         // Remove the "data: " prefix
-        const jsonData = chunk.replace(/^data:\s*/, "");
+        const jsonData = chunk.replace("data:", "");
 
         // Now 'jsonData' contains the JSON-encoded string without the prefix
         const jsonObject = JSON.parse(jsonData);
