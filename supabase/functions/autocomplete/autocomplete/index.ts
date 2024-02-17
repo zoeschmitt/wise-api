@@ -4,10 +4,9 @@ import { validate } from "../../_shared/utils/validate.ts";
 import { ObjectSchema, object, string } from "yup";
 import { CHATGPT_MODEL } from "../../_shared/utils/constants.ts";
 import { hardcodedPrompt } from "./hardcodedPrompt.ts";
-import { CORSResponse } from "../../_shared/utils/corsResponse.ts";
+import { CORSResponse } from "../../_shared/utils/cors.ts";
 import { CreateChatCompletionRequest, OpenAI } from "openai";
 import { Role } from "../../_shared/models/conversations.ts";
-import { CORS_HEADERS } from "../../_shared/utils/corsResponse.ts";
 
 interface Req {
   params: {
